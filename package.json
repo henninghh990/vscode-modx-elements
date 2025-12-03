@@ -1,0 +1,164 @@
+{
+  "name": "vscode-modx-elements",
+  "displayName": "Modx Elements",
+  "description": "Use this extensions to work with MODX elements",
+  "version": "0.0.3",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "author": "henning@catchmedia.no",
+  "publisher": "henninghh990",
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "vscode-modx-elements-explorer",
+					"title": "MODX",
+					"icon": "resources/modx-dark.svg" 
+				}
+			]
+		},
+    
+    	"views": {
+			"vscode-modx-elements-explorer": [
+				{
+					"id": "modx-elements-tree",
+					"name": "Elements",
+					"type": "tree",
+					"icon": "resources/modx-dark.svg"
+				}
+			]
+		}, 
+		"commands": [ 
+			{
+				"command": "vscode-modx-elements.addModxSite",
+				"title": "Add new MODX Site", 
+				"icon": "$(plus)"
+			},
+			{
+				"command": "vscode-modx-elements.openElement",
+				"title": "Open MODX Element"
+			},
+			{
+				"command": "vscode-modx-elements.refreshElements",
+				"title": "Refresh MODX Elements",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "vscode-modx-elements.searchElements",
+				"title": "Search MODX Elements",
+				"icon": "$(search)"
+			},
+			{ 
+				"command": "vscode-modx-elements.clearSearch",
+				"title": "Clear Search Filter",
+				"icon": "$(close)"
+			},
+			{
+				"command": "vscode-modx-elements.editModxSite",
+				"title": "Edit Site",
+				"icon": "$(settings-gear)"
+			},
+			{
+				"command": "vscode-modx-elements.newElement",
+				"title": "New",
+				"icon": "$(plus)"
+			},
+			{
+				"command": "vscode-modx-elements.deleteModxSite",
+				"title": "Remove site",
+				"icon": "$(trash)"
+			}
+		],
+    	"menus": {
+			"view/title": [
+				{
+					"command": "vscode-modx-elements.addModxSite",
+					"when": "view == modx-elements-tree",
+					"group": "navigation"
+				},
+				{
+					"command": "vscode-modx-elements.refreshElements",
+					"when": "view == modx-elements-tree && !vscode-modx-elements.noSitesConfigured",
+					"group": "navigation"
+				},
+				{
+					"command": "vscode-modx-elements.searchElements",
+					"when": "view == modx-elements-tree && !vscode-modx-elements.hasActiveFilter && !vscode-modx-elements.noSitesConfigured",
+					"group": "navigation"
+				},
+				{
+					"command": "vscode-modx-elements.clearSearch",
+					"when": "view == modx-elements-tree && vscode-modx-elements.hasActiveFilter && !vscode-modx-elements.noSitesConfigured", 
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "vscode-modx-elements.editModxSite",
+					"when": "view == modx-elements-tree && viewItem == modxSite",
+					"group": "inline"
+				},
+				{
+					"command": "vscode-modx-elements.editModxSite",
+					"when": "view == modx-elements-tree && viewItem == modxSite",
+					"group": "navigation"
+				},
+				{
+					"command": "vscode-modx-elements.deleteModxSite",
+					"when": "view == modx-elements-tree && viewItem == modxSite",
+					"group": "navigation"
+				}
+			]
+
+		},
+  		"viewsWelcome": [
+			{
+				"view": "modx-elements-tree",
+				"contents": "Welcome to MODX: Elements $(rocket) \nUse this extension to edit chunks, snippets, plugins and templates on your MODX sites.\nBefore you add a site, be sure to install the [VSCode MODX Elements](https://code.visualstudio.com) extra in MODX. This package includes a simple REST API to allow viewing and editing elements in MODX. \n\n[Add new site](command:vscode-modx-elements.addModxSite)"
+			}
+		],
+    	"configuration": {
+      		"title": "MODX Elements",
+      		"properties": {
+				"vscode-modx-elements.searchInContent": {
+					"type": "boolean",
+					"default": true,
+					"description": "Include element content in search filter."
+				}
+      		}
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.105.0",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.16.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.7.2"
+  }
+}
