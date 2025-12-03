@@ -1,14 +1,14 @@
 /* eslint-disable curly */
 import * as vscode from 'vscode';
 import axios, { AxiosInstance } from 'axios';
-import { SiteConfig, modElement } from './types';
+import { ModElementType, SiteConfig, modElement } from './types';
 import { getToken } from './config';
 
 export class ModxSite {
     public name: string;
     public baseUrl: string;
     public apiUrl: string;
-    public elements?: string[];
+    public elements?: ModElementType[];
     public tokenKey?: string;
     public accessToken?: string;
 
@@ -22,6 +22,8 @@ export class ModxSite {
     this.elements = cfg.elements;
     this.tokenKey = cfg.tokenKey;
   }
+
+
 
   
   apiBase(): string {
@@ -47,6 +49,8 @@ export class ModxSite {
 export abstract class ModxNode extends vscode.TreeItem {
   /** Pek til ModxSite når det finnes (settes i subklasser) */
   public site?: ModxSite;
+  children: ModxNode[];
+  type: ModElementType;
 
 
   protected constructor(
@@ -54,6 +58,12 @@ export abstract class ModxNode extends vscode.TreeItem {
     collapsible: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsible);
+	this.children = [];
+	this.type = null;
+  }
+
+  refresh(){
+
   }
 }
 
@@ -78,7 +88,7 @@ export class SiteNode extends ModxNode {
 export class CategoryNode extends ModxNode {
     constructor(
         public readonly parent: SiteNode, 
-        public readonly type: string
+        public readonly type: ModElementType
     ) {
         super(displayName(type).name, vscode.TreeItemCollapsibleState.Collapsed);
         this.site = parent.site; // gjenbruk samme ModxSite
@@ -86,7 +96,10 @@ export class CategoryNode extends ModxNode {
         this.contextValue = 'modxCategory';
         this.iconPath = new vscode.ThemeIcon(stats.icon);
         this.tooltip = `${stats.name} — ${this.site?.name}`;
+		this.children = [];
     }
+
+	
 
     async fetchElements(): Promise<modElement[]> {
 
@@ -97,19 +110,24 @@ export class CategoryNode extends ModxNode {
             return rows;
         } catch (e) {
             vscode.window.showErrorMessage(`Failed to fetch ${this.type} from ${this.site?.name}: ${e}`);
-            return []; 
+            return [];
         }
     }
 
     async getElements(filterQuery: string): Promise<ElementNode[]> {
-        const list = await this.fetchElements();
+        const elements = await this.filter(filterQuery);
         
-        const filtered = filterQuery && filterQuery.length ? this.filter(list, filterQuery) : list;
-
-        return filtered.map(el => new ElementNode(this, el));
+  
+        return elements.map(el => new ElementNode(this, el));
     }
 
-    filter(list: modElement[], query: string): modElement[] {
+    async filter(query: string): Promise<modElement[]> {
+		const list = await this.fetchElements();
+
+		if(!query || !query.length){
+			return list;
+		}
+
         const q = query.toLowerCase();
 
         const filtered = list.filter(el => {
@@ -137,34 +155,38 @@ export class CategoryNode extends ModxNode {
 
 // Element-nivå (konkrete MODX-objekter)
 export class ElementNode extends ModxNode {
-  constructor(
-    public readonly parent: CategoryNode,
-    public readonly element: modElement
-  ) {
-    super(element.name, vscode.TreeItemCollapsibleState.None);
-    this.site = parent.site;
-    this.contextValue = 'modxElement';
-    this.tooltip = `${element.name} (${parent.type})`;
-  
-    const ext =
-      parent.type === 'modSnippet' || parent.type === 'modPlugin' ? '.php'
-      : '.html';
+  	constructor(
+    	public readonly parent: CategoryNode,
+    	public readonly element: modElement
+  	) 
+	{
+		super(element.name, vscode.TreeItemCollapsibleState.None);
+		this.site = parent.site;
+		this.contextValue = 'modxElement';
+		this.tooltip = `${element.name} (${parent.type})`;
+		this.type = parent.type;
 
-    this.resourceUri = vscode.Uri.from({  
-      scheme: 'modx',
-      path: `/${this.site?.name}/${parent.type}/${element.id}/${encodeURIComponent(element.name)}${ext}`,
-    }); 
+    	this.resourceUri = this.createResourceURI();
 
-    this.command = { command: 'vscode.open', title: 'Open', arguments: [this.resourceUri] };
-  }
+    	this.command = { command: 'vscode.open', title: 'Open', arguments: [this.resourceUri] };
+  	}
+
+  	createResourceURI(){
+      	const ext = this.parent.type === 'modSnippet' || this.parent.type === 'modPlugin' ? '.php' : '.html';
+
+      	return vscode.Uri.from({  
+      		scheme: 'modx',
+      		path: `/${this.site?.name}/${this.parent.type}/${this.element.id}/${encodeURIComponent(this.element.name)}${ext}`,
+    	}); 
+  	}
 }
 
-function displayName(modxType: string): {name: string; icon: string} {
+function displayName(modxType: ModElementType): {name: string; icon: string} {
   switch (modxType) {
     case 'modSnippet': return {name: 'Snippets', icon: 'code'};
     case 'modChunk': return {name: 'Chunks', icon: 'extensions'};
     case 'modTemplate': return {name: 'Templates', icon: 'split-vertical'};
     case 'modPlugin': return {name: 'Plugins', icon: 'gear'};
-    default: return {name: modxType, icon: 'question'};
+    default: return {name: modxType || 'No name', icon: 'question'};
   }
 }

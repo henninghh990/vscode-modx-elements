@@ -2,7 +2,7 @@ export type SiteConfig = {
   name: string;
   baseUrl: string;
   apiUrl: string;          // f.eks. https://example.com/vscode-api/
-  elements?: string[], // ['modSnippet', 'modChunk', ...]
+  elements?: ModElementType[], // ['modSnippet', 'modChunk', ...]
   tokenKey?: string;   // nøkkel i SecretStorage (valgfritt)
 };
 
@@ -12,3 +12,5 @@ export type modElement = {
     content?: string; 
     type: string 
 };
+
+export type ModElementType = null | 'modChunk' | 'modSnippet' | 'modTemplate' | 'modPlugin'

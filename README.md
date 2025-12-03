@@ -5,4 +5,4 @@ This extension enables you to create and edit elements in your MODX sites via an
 ## Multiple MODX sites
 You can easilty add all your MODX sites and work with ease.
 
-![alt text](media/treeview.png)
+

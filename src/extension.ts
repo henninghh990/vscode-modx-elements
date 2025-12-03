@@ -5,6 +5,7 @@ import { SiteTreeProvider } from './siteTreeProvider';
 import { SiteNode } from './site';
 import { openAddOrEditSiteWebview } from './webviews/addSiteWebview';
 import { removeSite } from './config';
+import { AxiosError } from 'axios';
 
 export async function activate(context: vscode.ExtensionContext) {
     
@@ -25,20 +26,75 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 
-    const refreshCommand = vscode.commands.registerCommand('vscode-modx-elements.refreshElements', () => { provider.refresh();});
+    const refreshCommand = vscode.commands.registerCommand('vscode-modx-elements.refreshElements', (node) => { provider.refresh(node);});
     context.subscriptions.push(refreshCommand);
 
 
 	const newElementCommand = vscode.commands.registerCommand('vscode-modx-elements.newElement', async (node) => {
-		console.log(node);
+		let type = node.type.substring(3).toLowerCase();
+
+		
         const value = await vscode.window.showInputBox({
-            prompt: 'Enter name of snippet',
-            placeHolder: 'Type to search',
+            prompt: `Enter name of ${type}`,
+            placeHolder: `Type a name for your new ${type}`,
         });
 
-  		//POST `/`
+		if(!value){
+			 return;
+		}
+
+		const client = await node.site!.client();
+
+		try{
+			const res = await client.post(`/${node.type}`, { name: value });
+			if(res?.data?.success){
+				const elementNode = await provider.addChild(node, res.data.data);
+				if(elementNode){
+					vscode.commands.executeCommand('vscode.open', elementNode.resourceUri);
+				}
+				return;
+			}
+
+			vscode.window.showWarningMessage(res?.data?.error || 'Something went wrong');
+		}catch(e: any){ 
+			vscode.window.showWarningMessage(e?.response?.data?.error || 'Try another name');
+		}
     });
     context.subscriptions.push(newElementCommand);
+
+	const renameElementCommand = vscode.commands.registerCommand('vscode-modx-elements.renameElement', async (node) => {
+		console.log(node);		
+        const value = await vscode.window.showInputBox({
+            prompt: `Change name of ${node.element.name}`,
+            placeHolder: node.element.name
+        }); 
+
+		if(!value){
+			 return;
+		}
+
+		const client = await node.site!.client();
+		
+		try{
+			const res = await client.put(`/${node.type}/${node.element.id}`, { name: value });
+			if(res?.data?.success){
+				vscode.window.showInformationMessage(`${node.element.name} renamed to ${value}`);
+				node.label = value;
+				provider.refresh(node);
+				return;
+			}
+
+			vscode.window.showWarningMessage(res?.data?.error || 'Something went wrong');
+		}catch(e: any){ 
+			vscode.window.showWarningMessage(e?.response?.data?.error || 'Try another name');
+		}
+    });
+    context.subscriptions.push(renameElementCommand);
+
+	const openElementCommand = vscode.commands.registerCommand('vscode-modx-elements.openElement', async (node) => {
+		vscode.commands.executeCommand('vscode.open', node.resourceUri);
+    });
+    context.subscriptions.push(openElementCommand);
 
     // Search command – live filtrering med QuickInput
     const searchCommand = vscode.commands.registerCommand('vscode-modx-elements.searchElements', async () => {

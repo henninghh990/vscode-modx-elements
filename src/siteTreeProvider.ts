@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { loadSites } from './config';
 import { modElement, SiteConfig } from './types';
-import { CategoryNode, SiteNode } from './site';
+import { CategoryNode, ElementNode, ModxNode, SiteNode } from './site';
 
 export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private _em = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
@@ -13,9 +13,9 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem
 
   constructor(private context: vscode.ExtensionContext) {}
 
-  refresh(): void {
+  refresh(childNode?: ModxNode): void {
     this.cache.clear();
-    this._em.fire();
+    this._em.fire(childNode);
   }
 
 
@@ -26,6 +26,17 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem
 
   getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
     return element;
+  }
+
+  async addChild(parent: CategoryNode, element: modElement): Promise<ElementNode> {
+      if (!parent.children) {
+          parent.children = [];
+      }
+      const el = new ElementNode(parent, element);
+      parent.children.push(el);
+      this._em.fire(parent); // Refresh only the parent and its children
+
+      return el;
   }
 
   async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
