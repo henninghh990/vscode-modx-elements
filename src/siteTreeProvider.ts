@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { loadSites } from './config';
-import { modElement, SiteConfig } from './types';
+import { modElement } from './types';
 import { CategoryNode, ElementNode, ModxNode, SiteNode } from './site';
 
 export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private _em = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
   readonly onDidChangeTreeData = this._em.event;
 
-  // cache: siteKey|type -> liste
+  // cache: siteKey|type -> list
   private filterQuery: string = '';
   private cache = new Map<string, modElement[]>();
 
@@ -26,7 +26,7 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem
 
   getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
     return element;
-  }
+  } 
 
   async addChild(parent: CategoryNode, element: modElement): Promise<ElementNode> {
       if (!parent.children) {
@@ -42,7 +42,7 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem
   async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
     if (!element) {
       // ROOT: Sites
-      const sites = await loadSites(this.context); // ← returnerer SiteConfig[]
+      const sites = await loadSites(this.context); 
       if (!sites || sites.length === 0) {
         vscode.commands.executeCommand('setContext', 'vscode-modx-elements.noSitesConfigured', true);
         return [];
@@ -61,7 +61,7 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem
       return element.getElements(this.filterQuery);
     }
 
-    // ElementNodes har ingen barn
+
     return [];
   }
 }

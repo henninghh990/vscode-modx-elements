@@ -22,7 +22,6 @@ export async function openAddOrEditSiteWebview(
     );
 
     const nonce = getNonce();
-    //const scriptUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'addSite.js')  );
 
     if(existingSite?.tokenKey){
         existingSite.tokenKey = await getToken(context, existingSite.tokenKey);
@@ -33,19 +32,17 @@ export async function openAddOrEditSiteWebview(
     const disposables: vscode.Disposable[] = [];
  
     panel.webview.onDidReceiveMessage(async msg => {
-        console.log('msg', msg);
+        
         try{
             if (msg.type === 'ping') {
                 const { baseUrl, apiUrl, token } = msg.payload;
                 
                 const url = normalizeApiUrl(baseUrl, apiUrl);
                 const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-                
-                console.log(url);
-                // enkel ping; endre eventuelt til ?ping=1 i din API
+               
                 try{
                     const res = await axios.get(url, { headers, timeout: 2000 });
-                    console.log(res);
+                  
                     if(!res){
                         panel.webview.postMessage({ type: 'pingResult', ok: true, status: 'Error' });
                     }
@@ -118,8 +115,7 @@ export async function openAddOrEditSiteWebview(
 
     const s = site || { name: '', baseUrl: 'https://', apiUrl: 'modx-elements/', tokenKey: '', elements: ['modPlugin','modSnippet','modChunk','modTemplate'] };
 
-    
-  // CSP for enkel trygg skripting
+
   const csp = `
     default-src 'none';
     img-src ${webview.cspSource} https:;
@@ -127,7 +123,7 @@ export async function openAddOrEditSiteWebview(
     script-src ${webview.cspSource};
   `;
 
-  // Minimal, tema-vennlig styling (bruk VS Code CSS-vars)
+
   return /* html */`
 <!DOCTYPE html>
 <html lang="en">
@@ -168,6 +164,7 @@ export async function openAddOrEditSiteWebview(
   .checkboxes label { display:flex; align-items:center; gap: 8px; margin: 4px 0; }
   .error { color: var(--vscode-editorError-foreground); }
   .ok { color: var(--vscode-testing-iconPassed); }
+  .justify-content-between { justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -185,16 +182,19 @@ export async function openAddOrEditSiteWebview(
             <input name="baseUrl" type="url" value="${s.baseUrl}" placeholder="https://example.com" required/>
           </div>
           <div>
-            <label>API path or full URL</label>
+            <label>API path</label>
             <input name="apiUrl" type="text" value="${s.apiUrl}" />
           </div>
         </div>
 
         <label>Bearer token (optional)</label>
         <input name="token" type="password" value="${s.tokenKey || ''}" placeholder="Stored securely in system keychain"/>
-        <div class="actions">
+        <div class="actions justify-content-between">
+        <div>
           <button type="button" id="ping" class="btn-secondary">Ping API</button>
           <span id="pingStatus" class="status"></span>
+          </div>
+          <a href="https://extras.modx.com/package/modxelementsapi">Install MODX Elements API</a>
         </div>
       </fieldset>
 
@@ -234,6 +234,8 @@ $('#ping').addEventListener('click', () => {
     vscode.postMessage({ type: 'ping', payload });
 });
 
+
+
 $('#cancel').addEventListener('click', () => {
     vscode.postMessage({ type: 'cancel' });
 });
@@ -271,6 +273,7 @@ window.addEventListener('message', (e) => {
     }
     }
 });
+
 
 function serialize() {
     const fd = new FormData($('#f'));

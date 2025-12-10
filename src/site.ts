@@ -27,7 +27,7 @@ export class ModxSite {
 
   
   apiBase(): string {
-    // full URL eller base+path
+
     if (/^https?:\/\//i.test(this.cfg.apiUrl)) return this.cfg.apiUrl.replace(/\/+$/, '') + '/';
     return `${this.cfg.baseUrl.replace(/\/+$/, '')}/${this.cfg.apiUrl.replace(/^\/+/, '').replace(/\/+$/, '')}/`;
   }
@@ -47,7 +47,6 @@ export class ModxSite {
 }
 
 export abstract class ModxNode extends vscode.TreeItem {
-  /** Pek til ModxSite når det finnes (settes i subklasser) */
   public site?: ModxSite;
   children: ModxNode[];
   type: ModElementType;
@@ -72,7 +71,7 @@ export abstract class ModxNode extends vscode.TreeItem {
 export class SiteNode extends ModxNode {
   constructor(public readonly siteCfg: SiteConfig, public readonly context: vscode.ExtensionContext) {
     super(siteCfg.name, vscode.TreeItemCollapsibleState.Collapsed);
-    this.site = new ModxSite(siteCfg, context);  // én instans pr. site
+    this.site = new ModxSite(siteCfg, context);  
     this.tooltip = siteCfg.baseUrl;
     this.contextValue = 'modxSite';
     this.iconPath = new vscode.ThemeIcon('globe');
@@ -80,7 +79,7 @@ export class SiteNode extends ModxNode {
 
   getCategories(): CategoryNode[] {
     const types = this.siteCfg.elements ?? ['modSnippet','modChunk','modTemplate','modPlugin'];
-    return types.map(type => new CategoryNode(this, type)); // send parent
+    return types.map(type => new CategoryNode(this, type));
   }
 }
 
@@ -91,7 +90,7 @@ export class CategoryNode extends ModxNode {
         public readonly type: ModElementType
     ) {
         super(displayName(type).name, vscode.TreeItemCollapsibleState.Collapsed);
-        this.site = parent.site; // gjenbruk samme ModxSite
+        this.site = parent.site; 
         const stats = displayName(type);
         this.contextValue = 'modxCategory';
         this.iconPath = new vscode.ThemeIcon(stats.icon);
@@ -153,7 +152,7 @@ export class CategoryNode extends ModxNode {
     }
 }
 
-// Element-nivå (konkrete MODX-objekter)
+
 export class ElementNode extends ModxNode {
   	constructor(
     	public readonly parent: CategoryNode,

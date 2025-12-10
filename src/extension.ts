@@ -4,28 +4,22 @@ import { ModxFs } from './modxFs';
 import { SiteTreeProvider } from './siteTreeProvider';
 import { SiteNode } from './site';
 import { openAddOrEditSiteWebview } from './webviews/addSiteWebview';
-import { removeSite } from './config';
-import { AxiosError } from 'axios';
+import { openSitesFile, removeSite } from './config';
 
 export async function activate(context: vscode.ExtensionContext) {
     
-    // 1. Registrer FileSystemProvider og TreeView
+  
     const provider = new SiteTreeProvider(context);
     const fs = new ModxFs(context);
 
-    context.subscriptions.push(
-        vscode.workspace.registerFileSystemProvider('modx', fs, { isCaseSensitive: true })
-    );
+	const modxFileSystem = vscode.workspace.registerFileSystemProvider('modx', fs, { isCaseSensitive: true });
+    context.subscriptions.push(modxFileSystem);
 
-    const treeView = vscode.window.createTreeView('modx-elements-tree', {
-        treeDataProvider: provider
-    });
+    const treeView = vscode.window.createTreeView('modx-elements-tree', {  treeDataProvider: provider});
+
     context.subscriptions.push(treeView);
+
  
-    
-
-
-
     const refreshCommand = vscode.commands.registerCommand('vscode-modx-elements.refreshElements', (node) => { provider.refresh(node);});
     context.subscriptions.push(refreshCommand);
 
@@ -89,7 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			vscode.window.showWarningMessage(e?.response?.data?.error || 'Try another name');
 		}
     });
-    context.subscriptions.push(renameElementCommand);
+    context.subscriptions.push(renameElementCommand); 
 
 	const openElementCommand = vscode.commands.registerCommand('vscode-modx-elements.openElement', async (node) => {
 		vscode.commands.executeCommand('vscode.open', node.resourceUri);
@@ -98,18 +92,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Search command – live filtrering med QuickInput
     const searchCommand = vscode.commands.registerCommand('vscode-modx-elements.searchElements', async () => {
-        const value = await vscode.window.showInputBox({
-            prompt: 'Filter elements by name/content…',
-            placeHolder: 'Type to search',
-            ignoreFocusOut: true
-        });
-
-  		provider.setFilter(value?.trim() ?? '');
-  		vscode.commands.executeCommand('setContext', 'vscode-modx-elements.hasActiveFilter', !!value?.trim());
+        
+		await vscode.commands.executeCommand("list.find");
     });
     context.subscriptions.push(searchCommand);
 
-
+	const openConfigCommand = vscode.commands.registerCommand('vscode-modx-elements.openConfig', async () => {
+		await openSitesFile(context);
+	});
+	context.subscriptions.push(openConfigCommand);
 
 
   	// Clear search
@@ -141,7 +132,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 
-	// delete site
+	// Delete site
 	const deleteSiteCommand = vscode.commands.registerCommand('vscode-modx-elements.deleteModxSite', async (node: SiteNode) => {
 		if (!node || !node.site?.baseUrl) {
 			vscode.window.showWarningMessage('No MODX site selected.');

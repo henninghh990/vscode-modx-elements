@@ -3,7 +3,7 @@
   "displayName": "MODX Elements",
   "repository": "https://github.com/henninghh990/vscode-modx-elements",
   "description": "Use this extensions to work with MODX elements",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.105.0"
   },
@@ -30,8 +30,7 @@
         {
           "id": "modx-elements-tree",
           "name": "Elements",
-          "type": "tree",
-          "icon": "resources/modx-dark.svg"
+          "type": "tree"
         }
       ]
     },
@@ -56,6 +55,11 @@
         "icon": "$(search)"
       },
       {
+        "command" : "vscode-modx-elements.openConfig",
+        "title": "Open MODX Sites Configuration",
+        "icon": "$(settings-gear)"
+      },
+      {
         "command": "vscode-modx-elements.clearSearch",
         "title": "Clear Search Filter",
         "icon": "$(close)"
@@ -75,12 +79,12 @@
         "title": "Remove site",
         "icon": "$(trash)"
       },
-	  {
+      {
         "command": "vscode-modx-elements.openElement",
         "title": "Open",
         "icon": "$(plus)"
       },
-	  {
+      {
         "command": "vscode-modx-elements.renameElement",
         "title": "Rename",
         "icon": "$(pencil)"
@@ -102,11 +106,6 @@
           "command": "vscode-modx-elements.searchElements",
           "when": "view == modx-elements-tree && !vscode-modx-elements.hasActiveFilter && !vscode-modx-elements.noSitesConfigured",
           "group": "navigation"
-        },
-        {
-          "command": "vscode-modx-elements.clearSearch",
-          "when": "view == modx-elements-tree && vscode-modx-elements.hasActiveFilter && !vscode-modx-elements.noSitesConfigured",
-          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -117,15 +116,15 @@
         },
         {
           "command": "vscode-modx-elements.editModxSite",
-          "when": "view == modx-elements-tree && viewItem == modxSite", 
+          "when": "view == modx-elements-tree && viewItem == modxSite",
           "group": "navigation"
         },
-		{
+        {
           "command": "vscode-modx-elements.refreshElements",
           "when": "view == modx-elements-tree && viewItem == modxSite",
-          "group": "inline" 
+          "group": "inline"
         },
-		{
+        {
           "command": "vscode-modx-elements.refreshElements",
           "when": "view == modx-elements-tree && viewItem == modxCategory",
           "group": "inline"
@@ -135,43 +134,37 @@
           "when": "view == modx-elements-tree && viewItem == modxSite",
           "group": "navigation"
         },
-		{
-			"command": "vscode-modx-elements.newElement",
-			"when": "view == modx-elements-tree && viewItem == modxCategory",
-			"group": "navigation"
-		},
-		{
-			"command": "vscode-modx-elements.newElement",
-			"when": "view == modx-elements-tree && viewItem == modxCategory",
-			"group": "inline"
-		},
-		{
-			"command": "vscode-modx-elements.openElement",
-			"when": "view == modx-elements-tree && viewItem == modxElement",
-			"group": "navigation"
-		},
-		{
-			"command": "vscode-modx-elements.renameElement",
-			"when": "view == modx-elements-tree && viewItem == modxElement",
-			"group": "navigation"
-		}
+        {
+          "command": "vscode-modx-elements.newElement",
+          "when": "view == modx-elements-tree && viewItem == modxCategory",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-modx-elements.newElement",
+          "when": "view == modx-elements-tree && viewItem == modxCategory",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-modx-elements.openElement",
+          "when": "view == modx-elements-tree && viewItem == modxElement",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-modx-elements.renameElement",
+          "when": "view == modx-elements-tree && viewItem == modxElement",
+          "group": "navigation"
+        }
       ]
     },
     "viewsWelcome": [
       {
         "view": "modx-elements-tree",
-        "contents": "Welcome to MODX: Elements $(rocket) \nUse this extension to edit chunks, snippets, plugins and templates on your MODX sites.\nBefore you add a site, be sure to install the [VSCode MODX Elements](https://code.visualstudio.com) extra in MODX. This package includes a simple REST API to allow viewing and editing elements in MODX. \n\n[Add new site](command:vscode-modx-elements.addModxSite)"
+        "contents": "Welcome to MODX: Elements $(rocket) \nUse this extension to edit chunks, snippets, plugins and templates on your MODX sites.\nBefore you add a site, be sure to install the [MODX Elements API](https://extras.modx.com/package/modxelementsapi) extra on your sites. This package includes a simple REST API to allow viewing and editing elements in MODX. \n\n[Add new site](command:vscode-modx-elements.addModxSite)"
       }
     ],
     "configuration": {
       "title": "MODX Elements",
-      "properties": {
-        "vscode-modx-elements.searchInContent": {
-          "type": "boolean",
-          "default": true,
-          "description": "Include element content in search filter."
-        }
-      }
+      "properties": {}
     }
   },
   "scripts": {

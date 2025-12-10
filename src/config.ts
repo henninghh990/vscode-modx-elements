@@ -17,12 +17,8 @@ async function ensureStorageFile(context: vscode.ExtensionContext) {
 
 async function getSitesFile(context: vscode.ExtensionContext) {
   const file = path.join(context.globalStorageUri.fsPath, 'sites.json');
-
-  console.log(file);
-    // Sørg for at mappen finnes
     await vscode.workspace.fs.createDirectory(context.globalStorageUri);
 
-    // Hvis fila ikke finnes, lag tom array
     try {
         await vscode.workspace.fs.stat(vscode.Uri.file(file));
     } catch {
@@ -30,6 +26,12 @@ async function getSitesFile(context: vscode.ExtensionContext) {
     }
 
     return file;
+}
+
+export async function openSitesFile(context: vscode.ExtensionContext) {
+  const fileUri = await ensureStorageFile(context);
+  const doc = await vscode.workspace.openTextDocument(fileUri);
+  await vscode.window.showTextDocument(doc);
 }
 
 export async function loadSites(context: vscode.ExtensionContext): Promise<SiteConfig[]> {
